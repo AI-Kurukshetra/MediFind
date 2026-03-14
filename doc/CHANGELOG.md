@@ -1,0 +1,55 @@
+# CHANGELOG
+
+## 2026-03-14
+- chore(init): scaffolded MediFind repository structure and baseline Next.js configuration
+- feat(db): added initial Supabase schema migration for users, pharmacies, medicines, inventory, orders, delivery requests, prescriptions, and notifications
+- docs(doc): initialized operational docs (`TASKS`, `PROGRESS`, `BLOCKERS`, `DECISIONS`, `SCHEMA`)
+- docs(blockers): logged protected-path write limitation for `.codex` and `.agents/skills`
+- feat(api): added `GET /api/medicines/search` using validated query params and Supabase `search_medicines_nearby` RPC
+- feat(api): added pharmacy inventory management endpoints for listing, creating, and updating inventory records
+- feat(db): added migration for `inventory_owner_select` RLS policy to support pharmacy dashboard inventory reads
+- feat(auth): added sign-up, sign-in, sign-out, and profile (`/api/users/me`) endpoints using Supabase Auth
+- feat(db): added auth trigger migration to auto-sync `auth.users` with `public.users` profile records
+- feat(ui): implemented interactive medicine search page with loading skeletons, empty state, and error states
+- feat(ui): implemented pharmacy dashboard inventory UI with load/add/update flows and route-level loading/error boundaries
+- feat(api): added reservation and delivery workflow endpoints for order creation/listing and delivery status updates
+- feat(api): added prescription upload URL generation and prescription record management APIs
+- feat(storage): added private `prescriptions` storage bucket and access policies for owner uploads/reads
+- feat(api): added notification listing/read endpoints and stock-alert subscription management endpoints
+- feat(db): added stock alert subscription table and inventory-triggered notification generation
+- test(unit): added tests for validation schemas, medicine search route handler, and Supabase helper/auth wrappers
+- test(e2e): added Playwright specs for auth, medicine search, delivery workflows, and inventory update flows
+- fix(test): corrected UUID fixtures and stabilized inventory e2e assertions/mock sequencing
+- chore(test): configured Playwright web server to run against `pnpm build && pnpm start`
+- fix(config): corrected Next.js ESM config export and moved `typedRoutes` to top-level config
+- fix(supabase): moved request-client env validation into function scope to satisfy strict typing/build
+- chore(deps): installed dependencies and generated `pnpm-lock.yaml`
+- harden(api): enforced role-aware order/delivery status transitions and restricted prescription verification updates
+- harden(api): added pagination limits on list endpoints and safer cancellation fallback for failed delivery-request creation
+- test: reran full suite successfully (`vitest` and `playwright` passing)
+- chore(mcp): connected and authenticated Supabase MCP server for project 
+xuihtsssmpqpbwscikr (remote migration apply blocked by write-call cancellation in exec mode)
+- deploy(db): applied all local migrations to Supabase project 
+xuihtsssmpqpbwscikr via MCP
+- feat(auth-ui): replaced sign-in placeholder with full pharmacy auth screen (owner sign-in + pharmacy registration flow)
+- feat(ui): refactored dashboard to session-based pharmacy access and removed manual token/pharmacy ID entry from primary UX
+- feat(auth): added dashboard session bootstrap/sign-out behavior using local pharmacy session state
+- test(e2e): updated auth and inventory dashboard Playwright specs for the new UI/session model
+- feat(api): added `POST /api/medicines` (pharmacy-owner secured) for creating/selecting medicine master records
+- feat(api): added `GET /api/medicines/options` for dashboard medicine name lookup
+- feat(ui): removed manual medicine UUID dependency in dashboard by adding medicine search/select and create-and-select flows
+- feat(ui): added global Navbar component with brand identity, active route highlighting, and mobile hamburger menu
+- feat(ui): added Dialog component with accessible focus trap, backdrop blur, framer-motion animations, and mobile bottom-sheet behavior
+- feat(ui): added ToastProvider/useToast system with success/error variants, auto-dismiss, and framer-motion animations
+- feat(ui): redesigned medicine search page with hero section, geolocation detection, medicine autocomplete, radius pill selector, animated result cards, and accessible delivery dialog
+- feat(ui): redesigned pharmacy dashboard with header bar, animated stat cards, Toggle switch components, medicine search/create collapsible sections, and inventory list with stagger animations
+- feat(ui): redesigned home page with brand gradient, Pill icon, and styled CTA buttons
+- style(css): added hero-gradient, search-glow, and card-hover utility classes to globals.css
+- refactor(ui): replaced all inline error/success messages with toast notifications across search and dashboard
+- refactor(ui): replaced raw checkbox inputs with custom Toggle switch components in dashboard
+- refactor(ui): removed exposed pharmacy UUIDs and internal API references from user-facing search UI
+- feat(ui): redesigned auth page with split-screen layout — dark brand panel with feature cards on left, clean auth form on right
+- feat(ui): added icon-prefixed input fields (Mail, Lock, User, Phone, Building2, MapPin) to auth forms
+- feat(ui): added password visibility toggle, framer-motion form transitions, and geolocation detection for pharmacy registration
+- feat(ui): replaced inline error/success messages with toast notifications in auth flow
+- feat(ui): added collapsible pharmacy details section with animated expand/collapse

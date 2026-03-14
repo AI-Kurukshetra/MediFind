@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: 248 250 252;
+  --foreground: 15 23 42;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
+/* Modal root: fixed stacking context above map and all content */
+#modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+}
+#modal-root > * {
+  pointer-events: auto;
+}
+
+/* Ensure modal overlays Leaflet map (map uses high z-index) */
+body[data-dialog-open] .leaflet-pane,
+body[data-dialog-open] .leaflet-container,
+body[data-dialog-open] .leaflet-map-pane,
+body[data-dialog-open] .leaflet-tile-pane,
+body[data-dialog-open] .leaflet-overlay-pane,
+body[data-dialog-open] .leaflet-marker-pane,
+body[data-dialog-open] .leaflet-popup-pane {
+  z-index: 1 !important;
+}
+
+.saas-page {
+  @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-10;
+}
+
+.saas-grid {
+  @apply grid gap-6;
+}
+
+@layer utilities {
+  .hero-gradient {
+    background: linear-gradient(135deg, #f0fdfa 0%, #e0f7fa 30%, #f0f9ff 70%, #f8fafc 100%);
+  }
+
+  .search-glow {
+    box-shadow: 0 0 0 1px rgba(14, 165, 165, 0.08), 0 4px 24px rgba(14, 165, 165, 0.08);
+  }
+
+  .card-hover {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg;
+  }
+}

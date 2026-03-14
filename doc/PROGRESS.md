@@ -1,0 +1,135 @@
+# PROGRESS
+
+## 2026-03-14
+- Read `AGENTS.md` and `doc/PRD.md`.
+- Initialized baseline Next.js App Router project structure for MediFind.
+- Added starter app routes (`/`, `/search`, `/sign-in`, `/dashboard`) and health API route.
+- Created Supabase migration `20260314095500_init_medifind_schema.sql` with core tables, indexes, RLS policies, and `search_medicines_nearby` function.
+- Added base docs: `TASKS.md`, `BLOCKERS.md`, `CHANGELOG.md`, `DECISIONS.md`, and `SCHEMA.md`.
+- Logged filesystem permission blocker for `.codex/` and `.agents/skills/` write access.
+- Implemented `GET /api/medicines/search` endpoint backed by server-side validation and Supabase RPC `search_medicines_nearby`.
+- Implemented pharmacy inventory management APIs:
+  - `GET/POST /api/pharmacies/{pharmacyId}/inventory`
+  - `PATCH /api/pharmacies/{pharmacyId}/inventory/{inventoryId}`
+- Added validation schemas for inventory payloads and params.
+- Added migration `20260314103000_add_inventory_owner_select_policy.sql` for owner-level inventory reads under RLS.
+- Implemented Supabase authentication and profile setup APIs:
+  - `POST /api/auth/sign-up`
+  - `POST /api/auth/sign-in`
+  - `POST /api/auth/sign-out`
+  - `GET/PATCH /api/users/me`
+- Added migration `20260314112000_auth_profile_trigger.sql` to auto-create `public.users` profile rows from `auth.users` metadata.
+- Implemented `/search` page UI with form-driven medicine search, loading skeleton results, empty state, and user-friendly error states.
+- Added `app/search/loading.tsx` and `app/search/error.tsx` for route-level loading/error handling.
+- Implemented `/dashboard` inventory management UI to load inventory, add inventory records, and update existing records using owner bearer token.
+- Added `app/(dashboard)/dashboard/loading.tsx` and `app/(dashboard)/dashboard/error.tsx` for dashboard route state handling.
+- Implemented reservation and delivery workflow APIs:
+  - `GET/POST /api/orders`
+  - `PATCH /api/orders/{orderId}`
+  - `PATCH /api/delivery-requests/{deliveryRequestId}`
+- Added order/delivery validation schemas for payloads, params, and query filters.
+- Implemented prescription upload and storage integration:
+  - `POST /api/prescriptions/upload-url`
+  - `GET/POST /api/prescriptions`
+  - `PATCH /api/prescriptions/{prescriptionId}`
+- Added storage bucket + policies migration `20260314124500_prescription_storage_and_owner_verify.sql` and pharmacy-owner verification update policy for prescriptions.
+- Implemented notification subscription and stock alert workflow:
+  - `GET /api/notifications`
+  - `PATCH /api/notifications/{notificationId}`
+  - `GET/POST /api/notifications/subscriptions`
+  - `DELETE /api/notifications/subscriptions/{subscriptionId}`
+- Added migration `20260314132500_stock_alert_subscriptions_and_trigger.sql` with `stock_alert_subscriptions` table, RLS policies, and inventory trigger to auto-create stock-available notifications.
+- Added unit tests for validations, medicine search API handler behavior, and Supabase helper wrappers.
+- Attempted to run tests via `pnpm test`; execution blocked because `pnpm` is not installed in the environment.
+- Added Playwright e2e tests for auth page, medicine search behavior, delivery workflow API contract checks, and dashboard inventory load/add/update interactions.
+- Installed project dependencies and Playwright Chromium for test execution.
+- Ran unit test suite (`corepack pnpm test`): 13 passed, 0 failed.
+- Ran e2e suite (`corepack pnpm test:e2e`): 7 passed, 0 failed.
+- Fixed full-suite blockers and failures:
+  - corrected invalid UUID fixtures in validation tests,
+  - stabilized inventory e2e assertions and mocking behavior,
+  - switched Playwright web server to `build + start` for stability,
+  - fixed `next.config.mjs` ESM export and typedRoutes key,
+  - fixed strict env typing in `lib/supabase/request-client.ts`.
+- Completed review/hardening pass across API workflows:
+  - added participant/role-based status transition checks for order and delivery status updates,
+  - restricted prescription verification status updates to pharmacy owners/admins,
+  - fixed prescription verifier cleanup when un-verifying,
+  - added bounded list limits to high-volume endpoints (`orders`, `notifications`, `prescriptions`, `stock alert subscriptions`),
+  - hardened delivery order failure handling by auto-cancelling parent order when delivery request insert fails.
+- Re-ran full test suite after hardening:
+  - `corepack pnpm test` -> all unit tests passed,
+  - `corepack pnpm test:e2e` -> all e2e tests passed.
+
+- Connected Supabase MCP server for project 
+xuihtsssmpqpbwscikr and completed MCP login.
+- Migration apply remains blocked in non-interactive codex exec because Supabase MCP write calls are cancelled before execution.
+- Applied all Supabase migration SQL files remotely to project 
+xuihtsssmpqpbwscikr via MCP after successful MCP login and elevated non-interactive run.
+- Replaced `/sign-in` placeholder with a full pharmacy auth experience:
+  - sign-in for existing pharmacy owners,
+  - integrated account + pharmacy registration flow in one screen,
+  - session persistence via `medifind_pharmacy_session` local storage.
+- Wired dashboard to authenticated pharmacy sessions:
+  - removed manual token/pharmacy input dependency from the primary flow,
+  - auto-hydrates pharmacy context from `/api/pharmacies/me` when needed,
+  - added sign-out action and redirect behavior.
+- Redesigned pharmacy auth and dashboard surfaces with modern full-screen visual treatment and improved layout hierarchy.
+- Updated Playwright tests for the new auth UI and session-driven dashboard behavior.
+- Re-ran validation after implementation:
+  - `corepack pnpm build` -> passed,
+  - `corepack pnpm test` -> 13 passed,
+  - `corepack pnpm test:e2e` -> 7 passed.
+- Full UI redesign of medicine search page (`/search`):
+  - Added teal gradient hero section with brand icon and value proposition badges
+  - Replaced raw latitude/longitude inputs with "Use my location" geolocation button and collapsible advanced fields
+  - Added medicine name autocomplete via debounced `/api/medicines/options` calls
+  - Replaced raw radius input with visual pill-style radius selector (5/10/25/50 km)
+  - Redesigned result cards with lucide-react icons (MapPin, Package, Building2), stagger animations via framer-motion
+  - Removed exposed pharmacy UUIDs and internal API badge from user-facing UI
+  - Added Reserve button alongside Delivery button on result cards
+  - Replaced raw div overlay delivery modal with accessible Dialog component (focus trap, Escape close, framer-motion animation)
+  - Added toast notifications for delivery success/error instead of inline messages
+  - Improved empty state with SearchX icon illustration and helpful suggestion text
+  - Enhanced map view with taller height, brand-colored border, and pharmacy count badge
+  - Updated loading.tsx and error.tsx skeletons to match new layout
+- Full UI redesign of pharmacy dashboard (`/dashboard`):
+  - Added persistent header bar with pharmacy name, refresh button, and sign out
+  - Replaced basic stat tiles with animated StatCard components using lucide-react icons and brand colors
+  - Replaced raw HTML checkboxes with custom Toggle switch components
+  - Redesigned inventory list items with medicine pill icons, strength/dosage metadata, Rx badge, and availability status
+  - Replaced inline error/success cards with toast notifications
+  - Added medicine search with animated dropdown results and collapsible create-new-medicine section
+  - Added selected medicine display chip with change button
+  - Redesigned add-inventory form with icon-prefixed inputs (Box, DollarSign)
+  - Added framer-motion stagger animations on inventory list items
+  - Improved empty state with centered illustration
+  - Updated loading.tsx and error.tsx to match new layout structure
+- Full UI redesign of auth login/register page (`/sign-in`):
+  - Split-screen layout: dark brand panel (left) with MediFind logo, feature cards (Real-time Inventory, Location Discovery, Instant Orders, Smart Dashboard), and copyright footer
+  - Right panel: clean auth form with animated tab switcher (Sign In / Register)
+  - Icon-prefixed inputs for all fields (Mail, Lock, User, Phone, Building2, MapPin)
+  - Password visibility toggle (Eye/EyeOff icon button)
+  - framer-motion AnimatePresence for smooth form transitions between sign-in and register modes
+  - Geolocation "Detect location" button for pharmacy coordinates during registration
+  - Collapsible "Pharmacy Details" section with animated expand/collapse
+  - Toast notifications replacing all inline error/success messages
+  - Mobile-responsive: brand panel hidden on mobile, compact brand header shown instead
+  - "Looking for medicines?" footer link with Search icon pointing to /search
+- Added global UI infrastructure:
+  - Created `components/navbar.tsx` — sticky nav with MediFind brand logo, teal active states, mobile hamburger menu
+  - Created `components/ui/dialog.tsx` — accessible modal with focus trap, backdrop blur, framer-motion scale/fade animation, bottom-sheet on mobile
+  - Created `components/ui/toast.tsx` — context-based toast system with success/error variants, auto-dismiss, framer-motion animations
+  - Updated `app/layout.tsx` to include Navbar and ToastProvider globally
+  - Updated `app/globals.css` with hero-gradient, search-glow, and card-hover utility classes
+  - Redesigned home page with brand icon, gradient background, and styled CTA buttons
+- Improved pharmacy dashboard inventory onboarding:
+  - added medicine lookup endpoint `GET /api/medicines/options`,
+  - added medicine create endpoint `POST /api/medicines` with pharmacy-owner authorization checks,
+  - updated dashboard so stores can search/select or create medicine and auto-select it (no manual UUID typing).
+  - Updated inventory e2e flow to match the new medicine selection UX.
+  - Re-validated after changes:
+    - `corepack pnpm build` -> passed,
+    - `corepack pnpm test` -> 13 passed,
+    - `corepack pnpm test:e2e` -> 7 passed.
+- Applied all Supabase migrations (including `pharmacy_reviews` and `user_pharmacy_favorites`) to project `xuihtsssmpqpbwscikr` via MCP non-sandbox run to ensure the tables exist remotely.
